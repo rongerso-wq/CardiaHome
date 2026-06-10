@@ -281,6 +281,11 @@
     .tile.scale { background: linear-gradient(145deg,#E8EFF8,#D7E4F3); color:#2E5A8F; }
     .tile.bp    { background: linear-gradient(145deg,#FBE9ED,#F4D9E0); color:#B23A52; }
     .tile.feel  { background: linear-gradient(145deg,#FBF1DC,#F4E6C7); color:#9A6B16; }
+    .tile.spo2  { background: linear-gradient(145deg,#E1F2F0,#CFE8E3); color:#0F7A6E; }
+
+    /* "Auto-synced from Apple Watch" chip under the checklist heading */
+    .synced { display: flex; align-items: center; gap: 7px; margin: 9px 2px 0; font-size: 13px; font-weight: 700; color: var(--ink-soft); }
+    .synced svg { width: 16px; height: 16px; flex: 0 0 auto; color: #2E5A8F; }
 
     .card-main { flex: 1 1 auto; min-width: 0; }
     .card-title { font-size: var(--t-title); font-weight: 800; letter-spacing: -0.3px; line-height: 1.12; }
@@ -1011,13 +1016,20 @@
           <div class="section-head">
             <h2 class="section-title" id="checklist-title">Today&rsquo;s Check</h2>
             <div class="progress">
-              <span id="progress-count">0 of 3 done</span>
+              <span id="progress-count">0 of 4 done</span>
               <span class="dots" aria-hidden="true">
+                <span class="dot" data-dot></span>
                 <span class="dot" data-dot></span>
                 <span class="dot" data-dot></span>
                 <span class="dot" data-dot></span>
               </span>
             </div>
+          </div>
+          <div class="synced">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <rect x="6" y="6" width="12" height="12" rx="3"/><path d="M9 6l.5-3h5l.5 3M9 18l.5 3h5l.5-3"/>
+            </svg>
+            Auto-synced from your Apple&nbsp;Watch
           </div>
 
           <div class="cards" style="margin-top:13px;">
@@ -1070,8 +1082,8 @@
                   <div class="card-title">Blood Pressure</div>
                   <div class="card-sub">
                     <span class="metric-label">Last:</span>
-                    <span class="metric-value">125/80</span><span class="metric-unit">mmHg</span>
-                    <span class="badge"><span class="pip"></span>Normal</span>
+                    <span class="metric-value" id="bp-value">125/80</span><span class="metric-unit">mmHg</span>
+                    <span class="badge" id="bp-badge"><span class="pip"></span>Normal</span>
                   </div>
                 </div>
                 <span class="ring" aria-hidden="true">
@@ -1089,7 +1101,40 @@
               </div>
             </button>
 
-            <!-- Card 3: How do you feel today? -->
+            <!-- Card 3: Oxygen (SpO2) -->
+            <button class="card" type="button" data-task data-detail="spo2" aria-pressed="false">
+              <div class="card-row">
+                <div class="tile spo2">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                       stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M12 2.7S6 9 6 14a6 6 0 0 0 12 0c0-5-6-11.3-6-11.3z"/>
+                    <path d="M10.5 14.5a1.5 1.5 0 0 0 3 0"/>
+                  </svg>
+                </div>
+                <div class="card-main">
+                  <div class="card-title">Oxygen</div>
+                  <div class="card-sub">
+                    <span class="metric-label">Last:</span>
+                    <span class="metric-value" id="spo2-value">97</span><span class="metric-unit">%</span>
+                    <span class="badge" id="spo2-badge"><span class="pip"></span>Normal</span>
+                  </div>
+                </div>
+                <span class="ring" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2"
+                       stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                </span>
+              </div>
+              <div class="card-foot">
+                <svg class="spark" viewBox="0 0 120 32" preserveAspectRatio="none" aria-hidden="true">
+                  <polyline points="0,15 20,14 40,16 60,14 80,15 100,13 120,15" fill="none"
+                            stroke="#0F7A6E" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+                  <polygon points="0,15 20,14 40,16 60,14 80,15 100,13 120,15 120,32 0,32" fill="#0F7A6E" opacity="0.07"/>
+                </svg>
+                <div class="spark-meta"><b>7-day</b><span>in range</span></div>
+              </div>
+            </button>
+
+            <!-- Card 4: How do you feel today? -->
             <div class="card" style="cursor:default;" data-feelcard>
               <div class="card-row">
                 <div class="tile feel">
@@ -1412,8 +1457,19 @@
             </svg>
           </div>
           <div>
-            <div><span class="stat-big">125/80</span> <span class="stat-unit">mmHg</span></div>
-            <div class="stat-meta">Today, 8:12 AM · <span style="color:var(--calm);font-weight:800;">Normal</span></div>
+            <div><span class="stat-big" id="bpp-value">125/80</span> <span class="stat-unit">mmHg</span></div>
+            <div class="stat-meta">Today, 8:12 AM · <span id="bpp-status" style="color:var(--calm);font-weight:800;">Normal</span></div>
+          </div>
+        </div>
+        <div class="stepper">
+          <span class="stepper-label">Today&rsquo;s<br>systolic</span>
+          <div class="stepper-ctrl">
+            <button class="step-btn" type="button" id="bp-minus" aria-label="Decrease systolic by five">&minus;</button>
+            <div class="step-read">
+              <div class="step-val"><span id="bp-num">125</span><small> /80</small></div>
+              <div class="step-delta" id="bp-delta"></div>
+            </div>
+            <button class="step-btn" type="button" id="bp-plus" aria-label="Increase systolic by five">+</button>
           </div>
         </div>
         <div class="chart-card">
@@ -1432,6 +1488,63 @@
         </div>
       </div>
       <button class="panel-cta" type="button" data-log="bp">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        <span class="cta-txt">Log today’s reading</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- ============ Detail: Oxygen (SpO2) ============ -->
+  <section class="panel" id="panel-spo2" aria-label="Oxygen detail">
+    <div class="panel-inner">
+      <div class="panel-top">
+        <button class="panel-back" type="button" aria-label="Back to dashboard">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+               stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
+        </button>
+        <span class="panel-title">Oxygen</span>
+      </div>
+      <div class="panel-body">
+        <div class="stat-hero">
+          <div class="tile spo2" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2.7S6 9 6 14a6 6 0 0 0 12 0c0-5-6-11.3-6-11.3z"/><path d="M10.5 14.5a1.5 1.5 0 0 0 3 0"/>
+            </svg>
+          </div>
+          <div>
+            <div><span class="stat-big" id="sp-value">97</span> <span class="stat-unit">%</span></div>
+            <div class="stat-meta">Today, 8:13 AM · <span id="sp-status" style="color:var(--calm);font-weight:800;">Normal</span></div>
+          </div>
+        </div>
+        <div class="stepper">
+          <span class="stepper-label">Today&rsquo;s<br>oxygen</span>
+          <div class="stepper-ctrl">
+            <button class="step-btn" type="button" id="sp-minus" aria-label="Decrease oxygen by one percent">&minus;</button>
+            <div class="step-read">
+              <div class="step-val"><span id="sp-num">97</span><small> %</small></div>
+              <div class="step-delta" id="sp-delta"></div>
+            </div>
+            <button class="step-btn" type="button" id="sp-plus" aria-label="Increase oxygen by one percent">+</button>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-head"><span class="ttl">14-day trend</span><span class="rng">95–98%</span></div>
+          <svg class="chart" id="chart-spo2" viewBox="0 0 320 150" preserveAspectRatio="xMidYMid meet" aria-hidden="true"></svg>
+        </div>
+        <div class="hist">
+          <div class="hist-row"><div><div class="hist-day">Today</div><div class="hist-sub">8:13 AM</div></div>
+            <div class="hist-right"><span class="hist-val">97<small> %</small></span><span class="hist-pip"></span></div></div>
+          <div class="hist-row"><div><div class="hist-day">Yesterday</div><div class="hist-sub">8:11 AM</div></div>
+            <div class="hist-right"><span class="hist-val">97<small> %</small></span><span class="hist-pip"></span></div></div>
+          <div class="hist-row"><div><div class="hist-day">Sunday</div><div class="hist-sub">8:19 AM</div></div>
+            <div class="hist-right"><span class="hist-val">96<small> %</small></span><span class="hist-pip"></span></div></div>
+          <div class="hist-row"><div><div class="hist-day">Saturday</div><div class="hist-sub">8:16 AM</div></div>
+            <div class="hist-right"><span class="hist-val">98<small> %</small></span><span class="hist-pip"></span></div></div>
+        </div>
+      </div>
+      <button class="panel-cta" type="button" data-log="spo2">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"
              stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
         <span class="cta-txt">Log today’s reading</span>
@@ -1507,7 +1620,7 @@
         splashStart.addEventListener('click', function () { splash.classList.add('dismissed'); });
       }
 
-      var TOTAL = 3; // Scale, Blood Pressure, How-do-you-feel
+      var TOTAL = 4; // Scale, Blood Pressure, Oxygen, How-do-you-feel
       var countEl = document.getElementById('progress-count');
       var dots = document.querySelectorAll('[data-dot]');
       var feelCard = document.querySelector('[data-feelcard]');
@@ -1525,6 +1638,16 @@
       var wpStatusEl = document.getElementById('wp-status');
       var wtNumEl = document.getElementById('wt-num');
       var wtDeltaEl = document.getElementById('wt-delta');
+      var bpValueEl = document.getElementById('bp-value');
+      var bpBadgeEl = document.getElementById('bp-badge');
+      var bppValueEl = document.getElementById('bpp-value');
+      var bppStatusEl = document.getElementById('bpp-status');
+      var bpNumEl = document.getElementById('bp-num');
+      var spo2ValueEl = document.getElementById('spo2-value');
+      var spo2BadgeEl = document.getElementById('spo2-badge');
+      var spValueEl = document.getElementById('sp-value');
+      var spStatusEl = document.getElementById('sp-status');
+      var spNumEl = document.getElementById('sp-num');
 
       // Patient weight model (lbs). `dry` = the stable "usual" weight (baseline).
       var weight = {
@@ -1532,6 +1655,9 @@
         // prior 7 daily weigh-ins, oldest → newest (… 2-days-ago, yesterday)
         hist: [178, 179, 178, 179, 179, 179, 179]
       };
+      // Blood pressure & oxygen — auto-synced from the watch in the real product.
+      var bp = { sys: 125, dia: 80, min: 95, max: 200 };
+      var spo2 = { val: 97, min: 85, max: 100 };
 
       function feelComplete() {
         // feel task is "done" once every symptom row has a selection
@@ -1568,8 +1694,8 @@
       // (The ring glyph is toggled by CSS via the .zone-* class on the hero.)
       var ZONE = {
         green:  { cls: '', title: 'Green Zone — All clear', sub: 'Keep up your daily routine.' },
-        yellow: { cls: 'zone-yellow', title: 'Yellow Zone — Take action', alertTitle: 'Contact your nurse today', tail: ' A quick call keeps you safe.' },
-        red:    { cls: 'zone-red', title: 'Red Zone — Get help now', alertTitle: 'Call your nurse now', tail: ' This can be serious — call right away.' }
+        yellow: { cls: 'zone-yellow', title: 'Yellow Zone — Take action', alertTitle: 'Contact your nurse today', tail: ' We’ve flagged it for your nurse — a quick call keeps you safe.' },
+        red:    { cls: 'zone-red', title: 'Red Zone — Get help now', alertTitle: 'Call your nurse now', tail: ' Your care team has been alerted — call right away.' }
       };
       var BADGE = {
         green:  { txt: 'Stable',  fg: '#0F6B47',     bg: 'var(--calm-bg)' },
@@ -1579,27 +1705,43 @@
       var RANK = { green: 0, yellow: 1, red: 2 };
       function cap(s) { return s ? s.charAt(0).toUpperCase() + s.slice(1) : s; }
 
+      function worstOf() {
+        return Array.prototype.slice.call(arguments).reduce(function (w, c) { return RANK[c] > RANK[w] ? c : w; }, 'green');
+      }
+
       function computeZone() {
         var h = weight.hist, n = h.length;
-        var dDay  = weight.today - h[n - 1];   // since yesterday
-        var d2day = weight.today - h[n - 2];   // over two days
-        var dWeek = weight.today - h[0];        // over ~a week
-        var dBase = weight.today - weight.dry;  // above usual (dry) weight
+        var dDay  = weight.today - h[n - 1];
+        var d2day = weight.today - h[n - 2];
+        var dWeek = weight.today - h[0];
+        var dBase = weight.today - weight.dry;
         var wz = 'green', reasons = [];
-        // CHF "zone" thresholds (ACC/AHA HF guidance, Heart Failure Zones tool):
+        // Weight (ACC/AHA HF "zone" thresholds):
         if (dDay >= 5)       { wz = 'red';    reasons.push('your weight is up ' + dDay + ' lb since yesterday'); }
         else if (dDay >= 3)  { wz = 'yellow'; reasons.push('your weight is up ' + dDay + ' lb since yesterday'); }
         else if (d2day >= 3) { wz = 'yellow'; reasons.push('your weight is up ' + d2day + ' lb over two days'); }
         else if (dWeek >= 5) { wz = 'yellow'; reasons.push('your weight is up ' + dWeek + ' lb this week'); }
         else if (dBase >= 5) { wz = 'yellow'; reasons.push('your weight is ' + dBase + ' lb above your usual ' + weight.dry + ' lb'); }
+        // Blood pressure (high):
+        var bz = 'green';
+        if (bp.sys >= 180 || bp.dia >= 110)      { bz = 'red';    reasons.push('your blood pressure is high at ' + bp.sys + '/' + bp.dia); }
+        else if (bp.sys >= 160 || bp.dia >= 100) { bz = 'yellow'; reasons.push('your blood pressure is up at ' + bp.sys + '/' + bp.dia); }
+        // Oxygen (low):
+        var oz = 'green';
+        if (spo2.val < 90)      { oz = 'red';    reasons.push('your oxygen is low at ' + spo2.val + '%'); }
+        else if (spo2.val < 94) { oz = 'yellow'; reasons.push('your oxygen is a little low at ' + spo2.val + '%'); }
+        // Symptoms:
         var bad = badSymptoms();
         var sz = bad.length ? 'yellow' : 'green';
         if (bad.length) reasons.push('you reported ' + listIssues(bad));
-        return { zone: RANK[wz] >= RANK[sz] ? wz : sz, reasons: reasons };
+        return { zone: worstOf(wz, bz, oz, sz), reasons: reasons, sub: { weight: wz, bp: bz, spo2: oz } };
       }
 
+      function setBadge(el, zk) { if (!el) return; var b = BADGE[zk]; el.innerHTML = '<span class="pip" style="background:' + b.fg + '"></span>' + b.txt; el.style.background = b.bg; el.style.color = b.fg; }
+      function setStat(el, zk) { if (!el) return; var b = BADGE[zk]; el.textContent = b.txt; el.style.color = b.fg; }
+
       function updateZone() {
-        var r = computeZone(), z = r.zone, def = ZONE[z], badge = BADGE[z];
+        var r = computeZone(), z = r.zone, def = ZONE[z], sub = r.sub;
         // Hero
         if (hero) { hero.classList.remove('zone-yellow', 'zone-red', 'warn'); if (def.cls) hero.classList.add(def.cls); }
         if (heroTitleEl) heroTitleEl.textContent = def.title;
@@ -1611,24 +1753,32 @@
           if (alertTitleEl) alertTitleEl.textContent = def.alertTitle;
           if (alertMsgEl) alertMsgEl.textContent = cap(r.reasons.join('; ')) + '.' + def.tail;
         }
-        // Scale card + weight-panel readouts
+        // Each card + its panel is badged by its OWN sub-zone
         if (scaleValueEl) scaleValueEl.textContent = weight.today;
-        if (scaleBadgeEl) {
-          scaleBadgeEl.innerHTML = '<span class="pip" style="background:' + badge.fg + '"></span>' + badge.txt;
-          scaleBadgeEl.style.background = badge.bg; scaleBadgeEl.style.color = badge.fg;
-        }
+        setBadge(scaleBadgeEl, sub.weight);
         if (wpValueEl) wpValueEl.textContent = weight.today;
-        if (wpStatusEl) { wpStatusEl.textContent = badge.txt; wpStatusEl.style.color = badge.fg; }
+        setStat(wpStatusEl, sub.weight);
         if (wtNumEl) wtNumEl.textContent = weight.today;
         if (wtDeltaEl) {
           var d = weight.today - weight.hist[weight.hist.length - 1];
           wtDeltaEl.textContent = d === 0 ? 'No change vs. yesterday' : ((d > 0 ? '+' + d : d) + ' lb vs. yesterday');
-          wtDeltaEl.style.color = d >= 2 ? badge.fg : 'var(--ink-soft)';
+          wtDeltaEl.style.color = d >= 2 ? BADGE[sub.weight].fg : 'var(--ink-soft)';
         }
+        var bpStr = bp.sys + '/' + bp.dia;
+        if (bpValueEl) bpValueEl.textContent = bpStr;
+        setBadge(bpBadgeEl, sub.bp);
+        if (bppValueEl) bppValueEl.textContent = bpStr;
+        setStat(bppStatusEl, sub.bp);
+        if (bpNumEl) bpNumEl.textContent = bp.sys;
+        if (spo2ValueEl) spo2ValueEl.textContent = spo2.val;
+        setBadge(spo2BadgeEl, sub.spo2);
+        if (spValueEl) spValueEl.textContent = spo2.val;
+        setStat(spStatusEl, sub.spo2);
+        if (spNumEl) spNumEl.textContent = spo2.val;
         // Personalized tip (zone-aware)
         if (tipTextEl) {
-          if (z === 'yellow') tipTextEl.textContent = 'Your weight is creeping up. Skip added salt today, rest with your legs raised, and weigh again tomorrow morning.';
-          else if (z === 'red') tipTextEl.textContent = 'While you arrange care: sit upright, rest, and avoid salty foods and extra fluids. Bring this app to your visit.';
+          if (z === 'yellow') tipTextEl.textContent = 'Some of today’s readings are drifting. Rest, go easy on salt and fluids, and check again in a little while.';
+          else if (z === 'red') tipTextEl.textContent = 'While you arrange care: sit upright, rest, and avoid salty foods and extra fluids. Your care team can see your readings.';
           else tipTextEl.textContent = TIPS_GREEN[new Date().getDate() % TIPS_GREEN.length];
         }
       }
@@ -1638,6 +1788,16 @@
       var wtMinus = document.getElementById('wt-minus'), wtPlus = document.getElementById('wt-plus');
       if (wtMinus) wtMinus.addEventListener('click', function () { setWeight(weight.today - 1); });
       if (wtPlus) wtPlus.addEventListener('click', function () { setWeight(weight.today + 1); });
+
+      // BP & oxygen steppers (in their detail screens) drive the zone live
+      function setBP(sys) { bp.sys = Math.max(bp.min, Math.min(bp.max, sys)); updateZone(); }
+      var bpMinus = document.getElementById('bp-minus'), bpPlus = document.getElementById('bp-plus');
+      if (bpMinus) bpMinus.addEventListener('click', function () { setBP(bp.sys - 5); });
+      if (bpPlus) bpPlus.addEventListener('click', function () { setBP(bp.sys + 5); });
+      function setSpo2(v) { spo2.val = Math.max(spo2.min, Math.min(spo2.max, v)); updateZone(); }
+      var spMinus = document.getElementById('sp-minus'), spPlus = document.getElementById('sp-plus');
+      if (spMinus) spMinus.addEventListener('click', function () { setSpo2(spo2.val - 1); });
+      if (spPlus) spPlus.addEventListener('click', function () { setSpo2(spo2.val + 1); });
 
       // Demo scenarios — each isolates one zone rule. hist is oldest→newest (7 prior days).
       var SCEN = {
@@ -1763,6 +1923,8 @@
         [181, 180, 180, 181, 179, 180, 180, 179, 180, 181, 180, 179, 180, 180], '#2E5A8F');
       drawChart(document.getElementById('chart-bp'),
         [128, 124, 126, 122, 125, 127, 123, 125, 124, 126, 125, 125], '#B23A52');
+      drawChart(document.getElementById('chart-spo2'),
+        [96, 97, 96, 98, 97, 96, 97, 97, 98, 96, 97, 97], '#0F7A6E');
 
       // ---- Medications: tap to mark taken ----
       var medRows = document.querySelectorAll('[data-med]');

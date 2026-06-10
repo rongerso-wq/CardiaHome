@@ -1,2 +1,4 @@
 # Market-research reference (not for public repo)
 *.pdf
+
+.vercel
