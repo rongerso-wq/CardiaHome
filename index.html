@@ -1458,33 +1458,32 @@
           </div>
           <div>
             <div><span class="stat-big" id="bpp-value">125/80</span> <span class="stat-unit">mmHg</span></div>
-            <div class="stat-meta">Today, 8:12 AM · <span id="bpp-status" style="color:var(--calm);font-weight:800;">Normal</span></div>
+            <div class="stat-meta">Today · <span id="bpp-status" style="color:var(--calm);font-weight:800;">Normal</span></div>
+          </div>
+        </div>
+        <div class="stepper" style="margin-bottom: 10px;">
+          <span class="stepper-label">Top Number<br>(Systolic)</span>
+          <div class="stepper-ctrl">
+            <button class="step-btn" type="button" id="bp-sys-minus" aria-label="Decrease systolic by two">&minus;</button>
+            <div class="step-read">
+              <div class="step-val"><span id="bp-sys-num">125</span><small> mmHg</small></div>
+            </div>
+            <button class="step-btn" type="button" id="bp-sys-plus" aria-label="Increase systolic by two">+</button>
           </div>
         </div>
         <div class="stepper">
-          <span class="stepper-label">Today&rsquo;s<br>systolic</span>
+          <span class="stepper-label">Bottom Number<br>(Diastolic)</span>
           <div class="stepper-ctrl">
-            <button class="step-btn" type="button" id="bp-minus" aria-label="Decrease systolic by five">&minus;</button>
+            <button class="step-btn" type="button" id="bp-dia-minus" aria-label="Decrease diastolic by two">&minus;</button>
             <div class="step-read">
-              <div class="step-val"><span id="bp-num">125</span><small> /80</small></div>
-              <div class="step-delta" id="bp-delta"></div>
+              <div class="step-val"><span id="bp-dia-num">80</span><small> mmHg</small></div>
             </div>
-            <button class="step-btn" type="button" id="bp-plus" aria-label="Increase systolic by five">+</button>
+            <button class="step-btn" type="button" id="bp-dia-plus" aria-label="Increase diastolic by two">+</button>
           </div>
         </div>
         <div class="chart-card">
-          <div class="chart-head"><span class="ttl">Systolic · 12 readings</span><span class="rng">122–128 mmHg</span></div>
+          <div class="chart-head"><span class="ttl">Systolic Trend Chart</span><span class="rng">100–160 mmHg</span></div>
           <svg class="chart" id="chart-bp" viewBox="0 0 320 150" preserveAspectRatio="xMidYMid meet" aria-hidden="true"></svg>
-        </div>
-        <div class="hist">
-          <div class="hist-row"><div><div class="hist-day">Today</div><div class="hist-sub">8:12 AM</div></div>
-            <div class="hist-right"><span class="hist-val">125/80<small> mmHg</small></span><span class="hist-pip"></span></div></div>
-          <div class="hist-row"><div><div class="hist-day">Yesterday</div><div class="hist-sub">8:09 AM</div></div>
-            <div class="hist-right"><span class="hist-val">126/81<small> mmHg</small></span><span class="hist-pip"></span></div></div>
-          <div class="hist-row"><div><div class="hist-day">Sunday</div><div class="hist-sub">8:18 AM</div></div>
-            <div class="hist-right"><span class="hist-val">122/79<small> mmHg</small></span><span class="hist-pip"></span></div></div>
-          <div class="hist-row"><div><div class="hist-day">Saturday</div><div class="hist-sub">8:14 AM</div></div>
-            <div class="hist-right"><span class="hist-val">127/82<small> mmHg</small></span><span class="hist-pip"></span></div></div>
         </div>
       </div>
       <button class="panel-cta" type="button" data-log="bp">
@@ -1642,7 +1641,8 @@
       var bpBadgeEl = document.getElementById('bp-badge');
       var bppValueEl = document.getElementById('bpp-value');
       var bppStatusEl = document.getElementById('bpp-status');
-      var bpNumEl = document.getElementById('bp-num');
+      var bpSysNumEl = document.getElementById('bp-sys-num');
+      var bpDiaNumEl = document.getElementById('bp-dia-num');
       var spo2ValueEl = document.getElementById('spo2-value');
       var spo2BadgeEl = document.getElementById('spo2-badge');
       var spValueEl = document.getElementById('sp-value');
@@ -1650,14 +1650,17 @@
       var spNumEl = document.getElementById('sp-num');
 
       // Patient weight model (lbs). `dry` = the stable "usual" weight (baseline).
-      var weight = {
-        dry: 178, today: 180, min: 172, max: 192,
-        // prior 7 daily weigh-ins, oldest → newest (… 2-days-ago, yesterday)
-        hist: [178, 179, 178, 179, 179, 179, 179]
-      };
-      // Blood pressure & oxygen — auto-synced from the watch in the real product.
-      var bp = { sys: 125, dia: 80, min: 95, max: 200 };
-      var spo2 = { val: 97, min: 85, max: 100 };
+      var weight = { dry: 178, today: 180, min: 100, max: 350, hist: [178, 179, 178, 179, 179, 179, 179] };
+      var bp = { sys: 125, dia: 80, min_sys: 70, max_sys: 220, min_dia: 40, max_dia: 130 };
+      var spo2 = { val: 97, min: 75, max: 100 };
+
+      // Persistent local recovery check
+      try {
+        if (localStorage.getItem('ch_today_weight')) weight.today = Number(localStorage.getItem('ch_today_weight'));
+        if (localStorage.getItem('ch_today_bpsys')) bp.sys = Number(localStorage.getItem('ch_today_bpsys'));
+        if (localStorage.getItem('ch_today_bpdia')) bp.dia = Number(localStorage.getItem('ch_today_bpdia'));
+        if (localStorage.getItem('ch_today_spo2')) spo2.val = Number(localStorage.getItem('ch_today_spo2'));
+      } catch(e) {}
 
       function feelComplete() {
         // feel task is "done" once every symptom row has a selection
@@ -1769,7 +1772,8 @@
         setBadge(bpBadgeEl, sub.bp);
         if (bppValueEl) bppValueEl.textContent = bpStr;
         setStat(bppStatusEl, sub.bp);
-        if (bpNumEl) bpNumEl.textContent = bp.sys;
+        if (bpSysNumEl) bpSysNumEl.textContent = bp.sys;
+        if (bpDiaNumEl) bpDiaNumEl.textContent = bp.dia;
         if (spo2ValueEl) spo2ValueEl.textContent = spo2.val;
         setBadge(spo2BadgeEl, sub.spo2);
         if (spValueEl) spValueEl.textContent = spo2.val;
@@ -1781,20 +1785,37 @@
           else if (z === 'red') tipTextEl.textContent = 'While you arrange care: sit upright, rest, and avoid salty foods and extra fluids. Your care team can see your readings.';
           else tipTextEl.textContent = TIPS_GREEN[new Date().getDate() % TIPS_GREEN.length];
         }
+        try {
+          localStorage.setItem('ch_today_weight', String(weight.today));
+          localStorage.setItem('ch_today_bpsys', String(bp.sys));
+          localStorage.setItem('ch_today_bpdia', String(bp.dia));
+          localStorage.setItem('ch_today_spo2', String(spo2.val));
+        } catch(e) {}
+
+        // Dynamic Chart bindings
+        var chW = document.getElementById('chart-weight'); if (chW) drawChart(chW, weight.hist.concat(weight.today), '#2E5A8F');
+        var chB = document.getElementById('chart-bp'); if (chB) drawChart(chB, [124, 126, 122, 125, 127, 123, 125, bp.sys], '#B23A52');
+        var chO = document.getElementById('chart-spo2'); if (chO) drawChart(chO, [96, 98, 97, 96, 97, 97, 98, spo2.val], '#0F7A6E');
       }
 
       // Weight stepper (detail screen) drives the zone live
-      function setWeight(v) { weight.today = Math.max(weight.min, Math.min(weight.max, v)); updateZone(); }
+      function setWeight(v) { weight.today = Math.max(weight.min, Math.min(weight.max, Number(v))); updateZone(); }
       var wtMinus = document.getElementById('wt-minus'), wtPlus = document.getElementById('wt-plus');
-      if (wtMinus) wtMinus.addEventListener('click', function () { setWeight(weight.today - 1); });
-      if (wtPlus) wtPlus.addEventListener('click', function () { setWeight(weight.today + 1); });
+      if (wtMinus) wtMinus.addEventListener('click', function () { setWeight(Number(weight.today) - 1); });
+      if (wtPlus) wtPlus.addEventListener('click', function () { setWeight(Number(weight.today) + 1); });
 
-      // BP & oxygen steppers (in their detail screens) drive the zone live
-      function setBP(sys) { bp.sys = Math.max(bp.min, Math.min(bp.max, sys)); updateZone(); }
-      var bpMinus = document.getElementById('bp-minus'), bpPlus = document.getElementById('bp-plus');
-      if (bpMinus) bpMinus.addEventListener('click', function () { setBP(bp.sys - 5); });
-      if (bpPlus) bpPlus.addEventListener('click', function () { setBP(bp.sys + 5); });
-      function setSpo2(v) { spo2.val = Math.max(spo2.min, Math.min(spo2.max, v)); updateZone(); }
+      function setBP() {
+        bp.sys = Math.max(bp.min_sys, Math.min(bp.max_sys, Number(bp.sys)));
+        bp.dia = Math.max(bp.min_dia, Math.min(bp.max_dia, Number(bp.dia)));
+        updateZone();
+      }
+
+      document.getElementById('bp-sys-minus').addEventListener('click', function() { bp.sys -= 2; setBP(); });
+      document.getElementById('bp-sys-plus').addEventListener('click', function() { bp.sys += 2; setBP(); });
+      document.getElementById('bp-dia-minus').addEventListener('click', function() { bp.dia -= 2; setBP(); });
+      document.getElementById('bp-dia-plus').addEventListener('click', function() { bp.dia += 2; setBP(); });
+
+      function setSpo2(v) { spo2.val = Math.max(spo2.min, Math.min(spo2.max, Number(v))); updateZone(); }
       var spMinus = document.getElementById('sp-minus'), spPlus = document.getElementById('sp-plus');
       if (spMinus) spMinus.addEventListener('click', function () { setSpo2(spo2.val - 1); });
       if (spPlus) spPlus.addEventListener('click', function () { setSpo2(spo2.val + 1); });
