@@ -326,6 +326,7 @@
     .feel-name { font-size: var(--t-body); font-weight: 700; }
     .feel-choices { display: flex; gap: 10px; }
     .choice {
+      position: relative;
       width: 56px; height: 52px; border-radius: 14px;
       border: 1.5px solid var(--line); background: #FAF8F4;
       font-size: 26px; line-height: 1; cursor: pointer;
@@ -334,11 +335,31 @@
     }
     .choice:active { transform: scale(.92); }
     .choice:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
-    .choice.sel-good { border-color: var(--calm); background: var(--calm-bg); }
-    .choice.sel-bad  { border-color: var(--alarm); background: #FBE7E7; }
+    .choice.sel-good { border-color: var(--calm); background: var(--calm-bg); border-width: 2.5px; }
+    .choice.sel-bad  { border-color: var(--alarm); background: #FBE7E7; border-width: 2.5px; }
+    .choice.sel-good::after, .choice.sel-bad::after {
+      content: '✓';
+      position: absolute; top: -6px; right: -6px;
+      width: 16px; height: 16px; border-radius: 50%;
+      font-size: 10px; line-height: 16px; text-align: center; font-weight: 900;
+      background: var(--ink); color: #fff;
+    }
     .choice svg.face { width: 30px; height: 30px; }
     .choice[data-feel="good"] { color: var(--calm); }
     .choice[data-feel="bad"]  { color: #C0631C; }
+    .feel-row-urgent { border-top: 1px solid #F5D2D0; margin-top: 6px; padding-top: 11px; }
+    .feel-name-urgent { color: var(--alarm-2); font-weight: 800; }
+
+    /* ---------- Urgent safety modal ---------- */
+    #urgent-modal { position: fixed; inset: 0; z-index: 60; background: rgba(10,10,10,.72); display: flex; align-items: center; justify-content: center; padding: 24px; }
+    #urgent-modal[hidden] { display: none; }
+    .um-card { background: var(--surface); border-radius: var(--radius-card); padding: 28px 24px 24px; max-width: 340px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,.35); display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center; }
+    .um-icon { font-size: 42px; line-height: 1; }
+    .um-title { font-size: var(--t-title); font-weight: 900; color: var(--alarm); margin: 0; line-height: 1.2; }
+    .um-desc { font-size: var(--t-body); color: var(--ink); line-height: 1.6; margin: 0; }
+    .um-911 { display: block; width: 100%; padding: 17px; background: var(--alarm); color: #fff; border-radius: 18px; font-size: var(--t-body); font-weight: 900; text-decoration: none; text-align: center; letter-spacing: .3px; }
+    .um-continue { width: 100%; padding: 14px; background: transparent; border: 1.5px solid var(--line); border-radius: 18px; font-size: var(--t-body); font-weight: 700; color: var(--ink-soft); cursor: pointer; }
+    .um-continue:hover { background: #F1EEE8; }
 
     /* ---------- Medications ---------- */
     .medcard {
@@ -786,6 +807,17 @@
   <div class="device">
     <div class="screen">
 
+      <!-- Urgent symptom safety modal -->
+      <div id="urgent-modal" role="alertdialog" aria-modal="true" aria-labelledby="um-title" aria-describedby="um-desc" hidden>
+        <div class="um-card">
+          <div class="um-icon" aria-hidden="true">🚨</div>
+          <h2 class="um-title" id="um-title">This may be an emergency</h2>
+          <p class="um-desc" id="um-desc">Chest pain or sudden trouble breathing can be life-threatening.<br>If this is serious, <strong>call 911 now</strong> — do not wait.</p>
+          <a class="um-911" href="tel:911">Call 911</a>
+          <button class="um-continue" type="button" id="um-continue">I'm okay — continue my check</button>
+        </div>
+      </div>
+
       <!-- Welcome / splash gate -->
       <div class="splash" id="splash">
         <div class="splash-logo" aria-hidden="true">
@@ -942,7 +974,7 @@
         </section>
 
         <!-- Heart-status hero -->
-        <section class="hero" aria-label="Today's heart status">
+        <section class="hero" aria-live="polite" aria-label="Today's heart status">
           <div class="hero-ring">
             <svg viewBox="0 0 96 96" aria-hidden="true">
               <circle cx="48" cy="48" r="40" fill="none" stroke="rgba(255,255,255,.22)" stroke-width="10"/>
@@ -959,7 +991,7 @@
           </div>
           <div class="hero-body">
             <div class="hero-kicker">Today&rsquo;s Zone</div>
-            <div class="hero-title">Green Zone &mdash; All clear</div>
+            <div class="hero-title">Green Zone &mdash; No alerts</div>
             <div class="hero-sub"><span class="pip"></span><span class="hero-sub-txt">All readings in range</span></div>
           </div>
         </section>
@@ -1174,6 +1206,13 @@
                     <button class="choice" type="button" data-feel="bad"  aria-label="High fatigue"><svg class="face" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 15a4 4 0 0 1 7 0"/><path d="M9 9.5h.01M15 9.5h.01"/></svg></button>
                   </div>
                 </div>
+                <div class="feel-row feel-row-urgent" data-urgent>
+                  <span class="feel-name feel-name-urgent">Chest pain / can't breathe</span>
+                  <div class="feel-choices" role="group" aria-label="Chest pain or trouble breathing">
+                    <button class="choice" type="button" data-feel="good" aria-label="No chest pain or breathing trouble"><svg class="face" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 14a4 4 0 0 0 7 0"/><path d="M9 9.5h.01M15 9.5h.01"/></svg></button>
+                    <button class="choice" type="button" data-feel="bad"  aria-label="Chest pain or trouble breathing present"><svg class="face" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 15a4 4 0 0 1 7 0"/><path d="M9 9.5h.01M15 9.5h.01"/></svg></button>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -1360,7 +1399,7 @@
         </section>
 
         <!-- Safety disclaimer -->
-        <p class="disclaimer">CardiaHome is a <b>concept demo</b> — not a medical device and not a substitute for professional medical advice. Always follow your care team&rsquo;s guidance. In an emergency, call <b>911</b>.<br />Weight-zone thresholds follow ACC/AHA Heart Failure guidance &amp; the Heart Failure &ldquo;Zones&rdquo; tool.</p>
+        <p class="disclaimer">CardiaHome is a <b>concept demo</b> — not a medical device and not a substitute for professional medical advice. Always follow your care team&rsquo;s guidance. In an emergency, call <b>911</b>. <b>If you feel worse, seek care even if this app shows green.</b><br />Weight-zone thresholds follow ACC/AHA Heart Failure guidance &amp; the Heart Failure &ldquo;Zones&rdquo; tool.</p>
 
         <!-- Created-by credit -->
         <div class="credit">
@@ -1655,12 +1694,13 @@
       var bp = { sys: 125, dia: 80, min_sys: 70, max_sys: 220, min_dia: 40, max_dia: 130 };
       var spo2 = { val: 97, min: 75, max: 100 };
 
-      // Persistent local recovery check
+      // Persistent local recovery check — Number.isFinite guards prevent NaN from
+      // corrupted/missing storage silently breaking the zone engine.
       try {
-        if (localStorage.getItem('ch_today_weight')) weight.today = Number(localStorage.getItem('ch_today_weight'));
-        if (localStorage.getItem('ch_today_bpsys')) bp.sys = Number(localStorage.getItem('ch_today_bpsys'));
-        if (localStorage.getItem('ch_today_bpdia')) bp.dia = Number(localStorage.getItem('ch_today_bpdia'));
-        if (localStorage.getItem('ch_today_spo2')) spo2.val = Number(localStorage.getItem('ch_today_spo2'));
+        var _rw = Number(localStorage.getItem('ch_today_weight')); if (Number.isFinite(_rw)) weight.today = _rw;
+        var _rs = Number(localStorage.getItem('ch_today_bpsys'));  if (Number.isFinite(_rs)) bp.sys = _rs;
+        var _rd = Number(localStorage.getItem('ch_today_bpdia'));  if (Number.isFinite(_rd)) bp.dia = _rd;
+        var _ro = Number(localStorage.getItem('ch_today_spo2'));   if (Number.isFinite(_ro)) spo2.val = _ro;
       } catch(e) {}
 
       function feelComplete() {
@@ -1676,7 +1716,20 @@
       function badSymptoms() {
         var names = [];
         if (feelCard) {
-          feelCard.querySelectorAll('.feel-row').forEach(function (row) {
+          feelCard.querySelectorAll('.feel-row:not([data-urgent])').forEach(function (row) {
+            if (row.querySelector('.choice.sel-bad')) {
+              var n = row.querySelector('.feel-name');
+              if (n) names.push(n.textContent.trim().toLowerCase());
+            }
+          });
+        }
+        return names;
+      }
+
+      function urgentSymptoms() {
+        var names = [];
+        if (feelCard) {
+          feelCard.querySelectorAll('.feel-row[data-urgent]').forEach(function (row) {
             if (row.querySelector('.choice.sel-bad')) {
               var n = row.querySelector('.feel-name');
               if (n) names.push(n.textContent.trim().toLowerCase());
@@ -1697,9 +1750,9 @@
       // large rapid gain (≥5 lb/day) = Red. Any flagged symptom is at least Yellow.
       // (The ring glyph is toggled by CSS via the .zone-* class on the hero.)
       var ZONE = {
-        green:  { cls: '', title: 'Green Zone — All clear', sub: 'Keep up your daily routine.' },
-        yellow: { cls: 'zone-yellow', title: 'Yellow Zone — Take action', alertTitle: 'Contact your nurse today', tail: ' We’ve flagged it for your nurse — a quick call keeps you safe.' },
-        red:    { cls: 'zone-red', title: 'Red Zone — Get help now', alertTitle: 'Call your nurse now', tail: ' Your care team has been alerted — call right away.' }
+        green:  { cls: '', title: 'Green Zone — No alerts', sub: 'Keep up your daily routine.' },
+        yellow: { cls: 'zone-yellow', title: 'Yellow Zone — Take action', alertTitle: 'Contact your nurse today', tail: ' This app is not monitored — you need to call your nurse today.' },
+        red:    { cls: 'zone-red', title: 'Red Zone — Get help now', alertTitle: 'Call 911 or your nurse now', tail: ' This app is not monitored 24/7 — call your nurse or 911 right away.' }
       };
       var BADGE = {
         green:  { txt: 'Stable',  fg: '#0F6B47',     bg: 'var(--calm-bg)' },
@@ -1736,12 +1789,25 @@
         else if (spo2.val < 94) { oz = 'yellow'; reasons.push('your oxygen is a little low at ' + spo2.val + '%'); }
         // Symptoms:
         var bad = badSymptoms();
-        var sz = bad.length ? 'yellow' : 'green';
-        if (bad.length) reasons.push('you reported ' + listIssues(bad));
+        var urgent = urgentSymptoms();
+        var sz = urgent.length ? 'red' : (bad.length ? 'yellow' : 'green');
+        if (urgent.length) reasons.push('you reported ' + listIssues(urgent) + ' — call 911 or your nurse immediately');
+        else if (bad.length) reasons.push('you reported ' + listIssues(bad));
         return { zone: worstOf(wz, bz, oz, sz), reasons: reasons, sub: { weight: wz, bp: bz, spo2: oz } };
       }
 
-      function setBadge(el, zk) { if (!el) return; var b = BADGE[zk]; el.innerHTML = '<span class="pip" style="background:' + b.fg + '"></span>' + b.txt; el.style.background = b.bg; el.style.color = b.fg; }
+      function setBadge(el, zk) {
+        if (!el) return;
+        var b = BADGE[zk];
+        var pip = document.createElement('span');
+        pip.className = 'pip';
+        pip.style.background = b.fg;
+        el.textContent = '';
+        el.appendChild(pip);
+        el.appendChild(document.createTextNode(b.txt));
+        el.style.background = b.bg;
+        el.style.color = b.fg;
+      }
       function setStat(el, zk) { if (!el) return; var b = BADGE[zk]; el.textContent = b.txt; el.style.color = b.fg; }
 
       function updateZone() {
@@ -1783,7 +1849,7 @@
         // Personalized tip (zone-aware)
         if (tipTextEl) {
           if (z === 'yellow') tipTextEl.textContent = 'Some of today’s readings are drifting. Rest, go easy on salt and fluids, and check again in a little while.';
-          else if (z === 'red') tipTextEl.textContent = 'While you arrange care: sit upright, rest, and avoid salty foods and extra fluids. Your care team can see your readings.';
+          else if (z === 'red') tipTextEl.textContent = 'While you arrange care: sit upright, rest, and avoid salty foods and extra fluids. Call your nurse or 911 — this app is not monitored.';
           else tipTextEl.textContent = TIPS_GREEN[new Date().getDate() % TIPS_GREEN.length];
         }
         try {
@@ -2101,7 +2167,7 @@
           var sN = localStorage.getItem('ch_name'), sNu = localStorage.getItem('ch_nurse'), sD = localStorage.getItem('ch_dry');
           if (sN && obName) obName.value = sN;
           if (sNu && obNurse) obNurse.value = sNu;
-          if (sD) { obDryVal = +sD; if (obDryEl) obDryEl.textContent = obDryVal; }
+          var _sD = Number(sD); if (Number.isFinite(_sD) && _sD > 0) { obDryVal = _sD; if (obDryEl) obDryEl.textContent = obDryVal; }
           applyValues();
           if (onboard) onboard.classList.add('dismissed');
         }
@@ -2132,11 +2198,50 @@
         });
       });
 
+      // Urgent safety modal
+      var urgentModal = document.getElementById('urgent-modal');
+      var umContinue  = document.getElementById('um-continue');
+      var _umPendingBtn = null, _umPendingGroup = null;
+
+      function openUrgentModal(btn, group) {
+        _umPendingBtn = btn; _umPendingGroup = group;
+        urgentModal.hidden = false;
+        umContinue.focus();
+      }
+      function closeUrgentModal() {
+        urgentModal.hidden = true;
+        if (_umPendingBtn) _umPendingBtn.focus();
+        _umPendingBtn = null; _umPendingGroup = null;
+      }
+      function confirmUrgentBad() {
+        if (_umPendingBtn && _umPendingGroup) {
+          _umPendingGroup.querySelectorAll('.choice').forEach(function (b) {
+            b.classList.remove('sel-good', 'sel-bad');
+            b.setAttribute('aria-pressed', 'false');
+          });
+          _umPendingBtn.classList.add('sel-bad');
+          _umPendingBtn.setAttribute('aria-pressed', 'true');
+          refreshProgress();
+        }
+        closeUrgentModal();
+      }
+
+      if (umContinue) umContinue.addEventListener('click', confirmUrgentBad);
+      if (urgentModal) {
+        urgentModal.addEventListener('click', function (e) { if (e.target === urgentModal) closeUrgentModal(); });
+        document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !urgentModal.hidden) closeUrgentModal(); });
+      }
+
       // Symptom face selection (one choice per row)
       document.querySelectorAll('.feel-choices').forEach(function (group) {
         group.querySelectorAll('.choice').forEach(function (btn) {
           btn.addEventListener('click', function () {
             var pick = btn.getAttribute('data-feel'); // good | bad
+            // Intercept 'bad' tap on the urgent row — show safety modal first
+            if (pick === 'bad' && btn.closest('[data-urgent]')) {
+              openUrgentModal(btn, group);
+              return;
+            }
             group.querySelectorAll('.choice').forEach(function (b) {
               b.classList.remove('sel-good', 'sel-bad');
               b.setAttribute('aria-pressed', 'false');
