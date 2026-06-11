@@ -593,6 +593,7 @@
       font-size: 30px; font-weight: 800; color: var(--ink); cursor: pointer;
       display: flex; align-items: center; justify-content: center; line-height: 1;
       transition: transform .08s ease;
+      touch-action: none; user-select: none; -webkit-user-select: none;
     }
     .step-btn:active { transform: scale(.92); }
     .step-btn:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
@@ -1798,27 +1799,37 @@
         var chO = document.getElementById('chart-spo2'); if (chO) drawChart(chO, [96, 98, 97, 96, 97, 97, 98, spo2.val], '#0F7A6E');
       }
 
-      // Weight stepper (detail screen) drives the zone live
       function setWeight(v) { weight.today = Math.max(weight.min, Math.min(weight.max, Number(v))); updateZone(); }
-      var wtMinus = document.getElementById('wt-minus'), wtPlus = document.getElementById('wt-plus');
-      if (wtMinus) wtMinus.addEventListener('click', function () { setWeight(Number(weight.today) - 1); });
-      if (wtPlus) wtPlus.addEventListener('click', function () { setWeight(Number(weight.today) + 1); });
-
       function setBP() {
         bp.sys = Math.max(bp.min_sys, Math.min(bp.max_sys, Number(bp.sys)));
         bp.dia = Math.max(bp.min_dia, Math.min(bp.max_dia, Number(bp.dia)));
         updateZone();
       }
-
-      document.getElementById('bp-sys-minus').addEventListener('click', function() { bp.sys -= 2; setBP(); });
-      document.getElementById('bp-sys-plus').addEventListener('click', function() { bp.sys += 2; setBP(); });
-      document.getElementById('bp-dia-minus').addEventListener('click', function() { bp.dia -= 2; setBP(); });
-      document.getElementById('bp-dia-plus').addEventListener('click', function() { bp.dia += 2; setBP(); });
-
       function setSpo2(v) { spo2.val = Math.max(spo2.min, Math.min(spo2.max, Number(v))); updateZone(); }
-      var spMinus = document.getElementById('sp-minus'), spPlus = document.getElementById('sp-plus');
-      if (spMinus) spMinus.addEventListener('click', function () { setSpo2(spo2.val - 1); });
-      if (spPlus) spPlus.addEventListener('click', function () { setSpo2(spo2.val + 1); });
+
+      // Press-and-hold auto-repeat for every +/- stepper (tap = one step; hold = repeats)
+      function pressHold(btn, action) {
+        if (!btn) return;
+        var hold = null, rep = null;
+        function stop() { clearTimeout(hold); clearInterval(rep); hold = rep = null; }
+        btn.addEventListener('pointerdown', function (e) {
+          if (e.button && e.button !== 0) return;   // left button / touch only
+          e.preventDefault();
+          action();                                  // first step immediately
+          hold = setTimeout(function () { rep = setInterval(action, 90); }, 400);
+        });
+        ['pointerup', 'pointerleave', 'pointercancel'].forEach(function (ev) { btn.addEventListener(ev, stop); });
+        btn.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); action(); } });
+      }
+
+      pressHold(document.getElementById('wt-minus'), function () { setWeight(Number(weight.today) - 1); });
+      pressHold(document.getElementById('wt-plus'),  function () { setWeight(Number(weight.today) + 1); });
+      pressHold(document.getElementById('bp-sys-minus'), function () { bp.sys -= 2; setBP(); });
+      pressHold(document.getElementById('bp-sys-plus'),  function () { bp.sys += 2; setBP(); });
+      pressHold(document.getElementById('bp-dia-minus'), function () { bp.dia -= 2; setBP(); });
+      pressHold(document.getElementById('bp-dia-plus'),  function () { bp.dia += 2; setBP(); });
+      pressHold(document.getElementById('sp-minus'), function () { setSpo2(spo2.val - 1); });
+      pressHold(document.getElementById('sp-plus'),  function () { setSpo2(spo2.val + 1); });
 
       // Demo scenarios — each isolates one zone rule. hist is oldest→newest (7 prior days).
       var SCEN = {
@@ -2077,9 +2088,8 @@
       if (obBack) obBack.addEventListener('click', function () { obShow(obStep - 1); });
       if (obSkip) obSkip.addEventListener('click', finishOnboarding);
       function obSetDry(v) { obDryVal = Math.max(150, Math.min(260, v)); if (obDryEl) obDryEl.textContent = obDryVal; }
-      var obDryMinus = document.getElementById('ob-dry-minus'), obDryPlus = document.getElementById('ob-dry-plus');
-      if (obDryMinus) obDryMinus.addEventListener('click', function () { obSetDry(obDryVal - 1); });
-      if (obDryPlus) obDryPlus.addEventListener('click', function () { obSetDry(obDryVal + 1); });
+      pressHold(document.getElementById('ob-dry-minus'), function () { obSetDry(obDryVal - 1); });
+      pressHold(document.getElementById('ob-dry-plus'),  function () { obSetDry(obDryVal + 1); });
 
       // Tap the avatar to re-edit your details
       var avatarBtn = document.querySelector('.avatar');
