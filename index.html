@@ -599,6 +599,18 @@
     .chart { width: 100%; height: auto; display: block; }
 
     .hist { padding: 4px 18px; }
+    .wt-ref { margin: 0 18px 4px; background: var(--bg-2); border-radius: 16px; padding: 16px 18px; }
+    .wt-ref-title { font-size: 13px; font-weight: 800; letter-spacing: .8px; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 12px; }
+    .wt-ref-row { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-bottom: 1px solid var(--line); }
+    .wt-ref-row:last-of-type { border-bottom: none; }
+    .wt-ref-pip { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .wt-ref-pip.red { background: var(--alarm); }
+    .wt-ref-pip.yellow { background: #DA8324; }
+    .wt-ref-rule { font-size: 15px; font-weight: 600; color: var(--ink); flex: 1; }
+    .wt-ref-zone { font-size: 13px; font-weight: 800; border-radius: 20px; padding: 2px 10px; }
+    .wt-ref-zone.red { background: #FBE3E1; color: var(--alarm); }
+    .wt-ref-zone.yellow { background: #FBEFD8; color: #9A6B16; }
+    .wt-ref-source { font-size: 12px; color: var(--ink-soft); margin-top: 10px; font-style: italic; }
     .hist-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 2px; border-bottom: 1px solid var(--line); }
     .hist-row:last-child { border-bottom: none; }
     .hist-day { font-size: 16px; font-weight: 800; }
@@ -1486,6 +1498,16 @@
           <div class="chart-head"><span class="ttl">14-day trend</span><span class="rng">178–181 lbs</span></div>
           <svg class="chart" id="chart-weight" viewBox="0 0 320 150" preserveAspectRatio="xMidYMid meet" aria-hidden="true"></svg>
         </div>
+        <!-- Weight zone reference -->
+        <div class="wt-ref">
+          <div class="wt-ref-title">Weight alert guide</div>
+          <div class="wt-ref-row red"><span class="wt-ref-pip red"></span><span class="wt-ref-rule">+3 lb or more since yesterday</span><span class="wt-ref-zone red">Red</span></div>
+          <div class="wt-ref-row yellow"><span class="wt-ref-pip yellow"></span><span class="wt-ref-rule">+3 lb over 2 days</span><span class="wt-ref-zone yellow">Yellow</span></div>
+          <div class="wt-ref-row yellow"><span class="wt-ref-pip yellow"></span><span class="wt-ref-rule">+5 lb or more this week</span><span class="wt-ref-zone yellow">Yellow</span></div>
+          <div class="wt-ref-row yellow"><span class="wt-ref-pip yellow"></span><span class="wt-ref-rule">+5 lb above your dry weight</span><span class="wt-ref-zone yellow">Yellow</span></div>
+          <div class="wt-ref-source">ACC/AHA Heart Failure Guidelines &amp; HFSA Zones tool</div>
+        </div>
+
         <div class="hist">
           <div class="hist-row"><div><div class="hist-day">Today</div><div class="hist-sub">8:10 AM</div></div>
             <div class="hist-right"><span class="hist-val">180<small> lbs</small></span><span class="hist-pip"></span></div></div>
