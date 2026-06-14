@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src data: blob:; connect-src 'none'; font-src 'self';" />
   <title>CardiaHome — Daily Heart Check</title>
   <style>
     /* ============================================================
@@ -226,7 +227,7 @@
     .hero-score b { font-size: 26px; font-weight: 800; line-height: 1; }
     .hero-score span { font-size: 11px; font-weight: 700; letter-spacing: 1px; opacity: .85; margin-top: 2px; }
     .hero-body { flex: 1 1 auto; min-width: 0; }
-    .hero-kicker { font-size: 13px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; opacity: .95; }
+    /* .hero-kicker size moved to zone-icon block above (14px) */
     .hero-title { font-size: 24px; font-weight: 800; letter-spacing: -0.4px; margin-top: 3px; line-height: 1.1; }
     .hero-sub {
       margin-top: 9px; display: inline-flex; align-items: center; gap: 7px;
@@ -366,7 +367,7 @@
     .choice svg.face { width: 30px; height: 30px; }
     .choice[data-feel="good"] { color: var(--calm); }
     .choice[data-feel="bad"]  { color: #C0631C; }
-    .feel-row-urgent { border-top: 1px solid #F5D2D0; margin-top: 6px; padding-top: 11px; }
+    .feel-row-urgent { border-bottom: 1px solid #F5D2D0; margin-bottom: 6px; padding-bottom: 11px; }
     .feel-name-urgent { color: var(--alarm-2); font-weight: 800; }
 
     /* ---------- Urgent safety modal ---------- */
@@ -489,12 +490,19 @@
     .hero.zone-yellow { background: radial-gradient(120% 120% at 85% -10%, #EBA53C 0%, #DA8324 45%, #B5641A 100%); box-shadow: 0 10px 24px rgba(181,100,26,.22); }
     .hero.zone-red    { background: radial-gradient(120% 120% at 85% -10%, #E0564E 0%, #CC342B 45%, #A21E18 100%); box-shadow: 0 10px 24px rgba(160,30,24,.26); }
     .hero.zone-yellow .hero-sub .pip, .hero.zone-red .hero-sub .pip { background: #FFE6A6; }
-    .hero-score .zg { width: 34px; height: 34px; color: #fff; }
+    .hero-score .zg { width: 48px; height: 48px; color: #fff; filter: drop-shadow(0 1px 3px rgba(0,0,0,0.35)); }
     .hero-score .zg .zg-warn { display: none; }
     .hero.zone-yellow .hero-score .zg .zg-green,
     .hero.zone-red    .hero-score .zg .zg-green { display: none; }
     .hero.zone-yellow .hero-score .zg .zg-warn,
     .hero.zone-red    .hero-score .zg .zg-warn { display: block; }
+    .hero.zone-yellow .hero-kicker,
+    .hero.zone-yellow .hero-title,
+    .hero.zone-yellow .hero-sub { color: rgba(0,0,0,0.87); }
+    .hero.zone-red .hero-kicker,
+    .hero.zone-red .hero-title,
+    .hero.zone-red .hero-sub { color: rgba(0,0,0,0.87); }
+    .hero-kicker { font-size: 14px; font-weight: 800; letter-spacing: 1.5px; text-transform: uppercase; opacity: .95; }
 
     /* ---------- Welcome / splash gate ---------- */
     .splash {
@@ -801,13 +809,13 @@
     .adh-streak svg { width: 15px; height: 15px; }
     .adh-week { display: flex; gap: 6px; }
     .adh-day { flex: 1 1 0; display: flex; flex-direction: column; align-items: center; gap: 6px; }
-    .adh-ring { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid var(--line); color: #fff; }
+    .adh-ring { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid var(--line); color: #fff; }
     .adh-ring.full { background: var(--calm); border-color: var(--calm); }
     .adh-ring.partial { border-color: var(--calm); color: var(--calm); }
     .adh-ring.none { border-color: var(--line); }
     .adh-check { width: 16px; height: 16px; opacity: 0; }
     .adh-ring.full .adh-check, .adh-ring.partial .adh-check { opacity: 1; }
-    .adh-dow { font-size: 11px; font-weight: 700; color: var(--ink-soft); }
+    .adh-dow { font-size: 13px; font-weight: 700; color: var(--ink-soft); }
 
     /* ---------- Safety disclaimer ---------- */
     .disclaimer {
@@ -893,7 +901,7 @@
                 </svg>
               </div>
               <h2 class="ob-q">Your usual weight</h2>
-              <p class="ob-help">Your steady, feeling-well weight. We&rsquo;ll alert you if you rise above it.</p>
+              <p class="ob-help">Your steady, feeling-well weight (your <b>dry weight</b>). We&rsquo;ll alert you if you rise above it.</p>
               <div class="ob-stepper">
                 <button class="step-btn" type="button" id="ob-dry-minus" aria-label="Decrease usual weight">&minus;</button>
                 <div class="step-read"><div class="step-val"><span id="ob-dry">178</span><small> lbs</small></div></div>
@@ -1204,6 +1212,13 @@
               </div>
 
               <div class="feel-list">
+                <div class="feel-row feel-row-urgent" data-urgent>
+                  <span class="feel-name feel-name-urgent">Chest pain or trouble breathing</span>
+                  <div class="feel-choices" role="group" aria-label="Chest pain or trouble breathing">
+                    <button class="choice" type="button" data-feel="good" aria-label="No chest pain or breathing trouble"><svg class="face" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 14a4 4 0 0 0 7 0"/><path d="M9 9.5h.01M15 9.5h.01"/></svg></button>
+                    <button class="choice" type="button" data-feel="bad"  aria-label="Chest pain or trouble breathing present"><svg class="face" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 15a4 4 0 0 1 7 0"/><path d="M9 9.5h.01M15 9.5h.01"/></svg></button>
+                  </div>
+                </div>
                 <div class="feel-row">
                   <span class="feel-name">Breathing</span>
                   <div class="feel-choices" role="group" aria-label="Breathing">
@@ -1223,13 +1238,6 @@
                   <div class="feel-choices" role="group" aria-label="Fatigue">
                     <button class="choice" type="button" data-feel="good" aria-label="Low fatigue"><svg class="face" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 14a4 4 0 0 0 7 0"/><path d="M9 9.5h.01M15 9.5h.01"/></svg></button>
                     <button class="choice" type="button" data-feel="bad"  aria-label="High fatigue"><svg class="face" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 15a4 4 0 0 1 7 0"/><path d="M9 9.5h.01M15 9.5h.01"/></svg></button>
-                  </div>
-                </div>
-                <div class="feel-row feel-row-urgent" data-urgent>
-                  <span class="feel-name feel-name-urgent">Chest pain / can't breathe</span>
-                  <div class="feel-choices" role="group" aria-label="Chest pain or trouble breathing">
-                    <button class="choice" type="button" data-feel="good" aria-label="No chest pain or breathing trouble"><svg class="face" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 14a4 4 0 0 0 7 0"/><path d="M9 9.5h.01M15 9.5h.01"/></svg></button>
-                    <button class="choice" type="button" data-feel="bad"  aria-label="Chest pain or trouble breathing present"><svg class="face" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8.5 15a4 4 0 0 1 7 0"/><path d="M9 9.5h.01M15 9.5h.01"/></svg></button>
                   </div>
                 </div>
               </div>
@@ -1389,7 +1397,7 @@
                   <path d="M9 6l.5-3h5l.5 3M9 18l.5 3h5l.5-3"/>
                 </svg>
               </div>
-              <div class="dev-name">Apple Watch</div>
+              <div class="dev-name">Bluetooth BP Cuff</div>
               <div class="dev-status"><span class="pip"></span>Connected</div>
             </div>
             <div class="dev">
@@ -1417,8 +1425,10 @@
           </div>
         </section>
 
+        <!-- Storage warning (hidden until triggered) -->
+        <div id="storage-warn" hidden style="background:#FFF3CD;border:1px solid #F0C040;border-radius:10px;padding:10px 14px;font-size:15px;color:#7A5800;margin-bottom:12px;line-height:1.4;">&#9888; Your readings could not be saved. If you are in private browsing mode or storage is full, your data will be lost when you close this page.</div>
         <!-- Safety disclaimer -->
-        <p class="disclaimer">CardiaHome is a <b>concept demo</b> — not a medical device and not a substitute for professional medical advice. Always follow your care team&rsquo;s guidance. In an emergency, call <b>911</b>. <b>If you feel worse, seek care even if this app shows green.</b><br />Weight-zone thresholds follow ACC/AHA Heart Failure guidance &amp; the Heart Failure &ldquo;Zones&rdquo; tool.</p>
+        <p class="disclaimer">CardiaHome is a <b>concept demo</b> — not a medical device and not a substitute for professional medical advice. <b>This software has not been reviewed or cleared by the FDA and is not approved for clinical use.</b> Always follow your care team&rsquo;s guidance. In an emergency, call <b>911</b>. <b>If you feel worse, seek care even if this app shows green.</b><br />Weight-zone thresholds follow ACC/AHA Heart Failure guidance &amp; the Heart Failure &ldquo;Zones&rdquo; tool.</p>
 
         <!-- Created-by credit -->
         <div class="credit">
@@ -1628,6 +1638,7 @@
       </div>
 
       <div class="chat" id="chat-thread">
+        <div style="background:#FFF3CD;border:1px solid #F0C040;border-radius:10px;padding:10px 14px;font-size:14px;color:#7A5800;margin-bottom:8px;line-height:1.4;"><b>Demo only.</b> Messages are not monitored. In an emergency, call <b>911</b> immediately.</div>
         <div class="chat-day">Today</div>
         <div class="msg them">
           <div class="bubble">Good morning, John! I can see your weight has been steady — lovely work. How are you feeling today?</div>
@@ -1771,7 +1782,7 @@
       var ZONE = {
         green:  { cls: '', title: 'Green Zone — No alerts', sub: 'Keep up your daily routine.' },
         yellow: { cls: 'zone-yellow', title: 'Yellow Zone — Take action', alertTitle: 'Contact your nurse today', tail: ' This app is not monitored — you need to call your nurse today.' },
-        red:    { cls: 'zone-red', title: 'Red Zone — Get help now', alertTitle: 'Call 911 or your nurse now', tail: ' This app is not monitored 24/7 — call your nurse or 911 right away.' }
+        red:    { cls: 'zone-red', title: 'Red Zone — Call 911 now', alertTitle: 'Call 911 — emergency care needed', tail: ' Call 911 now. Do not wait. Contact your nurse after emergency help is on the way.' }
       };
       var BADGE = {
         green:  { txt: 'Stable',  fg: '#0F6B47',     bg: 'var(--calm-bg)' },
@@ -1793,8 +1804,7 @@
         var dBase = weight.today - weight.dry;
         var wz = 'green', reasons = [];
         // Weight (ACC/AHA HF "zone" thresholds):
-        if (dDay >= 5)       { wz = 'red';    reasons.push('your weight is up ' + dDay + ' lb since yesterday'); }
-        else if (dDay >= 3)  { wz = 'yellow'; reasons.push('your weight is up ' + dDay + ' lb since yesterday'); }
+        if (dDay >= 3)       { wz = 'red';    reasons.push('your weight is up ' + dDay + ' lb since yesterday'); }
         else if (d2day >= 3) { wz = 'yellow'; reasons.push('your weight is up ' + d2day + ' lb over two days'); }
         else if (dWeek >= 5) { wz = 'yellow'; reasons.push('your weight is up ' + dWeek + ' lb this week'); }
         else if (dBase >= 5) { wz = 'yellow'; reasons.push('your weight is ' + dBase + ' lb above your usual ' + weight.dry + ' lb'); }
@@ -1868,7 +1878,7 @@
         // Personalized tip (zone-aware)
         if (tipTextEl) {
           if (z === 'yellow') tipTextEl.textContent = 'Some of today’s readings are drifting. Rest, go easy on salt and fluids, and check again in a little while.';
-          else if (z === 'red') tipTextEl.textContent = 'While you arrange care: sit upright, rest, and avoid salty foods and extra fluids. Call your nurse or 911 — this app is not monitored.';
+          else if (z === 'red') tipTextEl.textContent = 'Call 911 now. While waiting for help: sit upright, rest, and avoid salty foods and extra fluids.';
           else tipTextEl.textContent = TIPS_GREEN[new Date().getDate() % TIPS_GREEN.length];
         }
         try {
@@ -1876,7 +1886,11 @@
           localStorage.setItem('ch_today_bpsys', String(bp.sys));
           localStorage.setItem('ch_today_bpdia', String(bp.dia));
           localStorage.setItem('ch_today_spo2', String(spo2.val));
-        } catch(e) {}
+        } catch(e) {
+          console.warn('[CardiaHome] storage write failed:', e);
+          var sb = document.getElementById('storage-warn');
+          if (sb) { sb.hidden = false; }
+        }
 
         // Dynamic Chart bindings
         var chW = document.getElementById('chart-weight'); if (chW) drawChart(chW, weight.hist.concat(weight.today), '#2E5A8F');
@@ -1954,7 +1968,12 @@
       // ---- Detail panels ----
       function openPanel(key) {
         var p = document.getElementById('panel-' + key);
-        if (p) { p.classList.add('open'); p.scrollTop = 0; }
+        if (p) {
+          p.classList.add('open');
+          p.scrollTop = 0;
+          var back = p.querySelector('.panel-back');
+          if (back) setTimeout(function() { back.focus(); }, 360);
+        }
       }
       document.querySelectorAll('.panel-back').forEach(function (b) {
         b.addEventListener('click', function () { b.closest('.panel').classList.remove('open'); });
@@ -2080,7 +2099,11 @@
       var bellBtn = document.querySelector('.bell');
 
       function openMessages() {
-        if (msgPanel) msgPanel.classList.add('open');
+        if (msgPanel) {
+          msgPanel.classList.add('open');
+          var back = msgPanel.querySelector('.panel-back');
+          if (back) setTimeout(function() { back.focus(); }, 360);
+        }
         if (thread) thread.scrollTop = thread.scrollHeight;
         if (bellBtn) bellBtn.classList.add('read');
         var mc = document.querySelector('.message-cta'); if (mc) mc.classList.add('read');
@@ -2108,7 +2131,7 @@
           if (u.indexOf('weight') > -1)
             reply = 'Thanks for telling me. Please weigh again tomorrow morning, go easy on salty foods today, and take your water pill. I’ll be keeping an eye on your numbers.';
           else if (u.indexOf('breath') > -1 || u.indexOf('short') > -1)
-            reply = 'I’m sorry you’re more short of breath. Sit upright and rest. If it gets worse or you have chest pain, call your nurse line or 911 right away — I’m flagging this for the team now.';
+            reply = ‘I’m sorry you’re more short of breath. Sit upright and rest. If it gets worse or you have chest pain, call 911 right away. Do not wait — call 911 first, then contact your nurse.’;
           else if (u.indexOf('question') > -1)
             reply = 'Of course — go ahead and tell me what’s on your mind.';
           else
