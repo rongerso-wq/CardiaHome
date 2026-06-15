@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; connect-src 'none'; form-action 'none';" />
   <title>CardiaHome — Daily Heart Check</title>
   <style>
     /* ============================================================
@@ -900,7 +901,7 @@
               </div>
               <h2 class="ob-q">What should we call you?</h2>
               <p class="ob-help">We&rsquo;ll use your first name to greet you each day.</p>
-              <input class="ob-input" id="ob-name" type="text" value="John" aria-label="Your first name" />
+              <input class="ob-input" id="ob-name" type="text" value="John" maxlength="40" autocomplete="off" aria-label="Your first name" />
             </div>
 
             <!-- Step 2: dry weight -->
@@ -932,7 +933,7 @@
               </div>
               <h2 class="ob-q">Your care nurse</h2>
               <p class="ob-help">Who should we connect you with for messages and calls?</p>
-              <input class="ob-input" id="ob-nurse" type="text" value="Sarah" aria-label="Your nurse's name" />
+              <input class="ob-input" id="ob-nurse" type="text" value="Sarah" maxlength="40" autocomplete="off" aria-label="Your nurse's name" />
             </div>
           </div>
 
@@ -1354,7 +1355,7 @@
                 <span class="l-title">Why daily weighing matters</span>
                 <svg class="l-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg>
               </button>
-              <div class="learn-a"><p>A sudden gain of <b>3 lb in a day, 3 lb over two days, or 5 lb in a week</b> often means your body is holding extra fluid — the earliest sign to act. Weigh each morning, after the toilet, before breakfast, in similar clothing.<span class="src">Thresholds follow the ACC/AHA Heart Failure guidelines and the Heart Failure &ldquo;Zones&rdquo; patient tool. <a href="https://www.guidelinecentral.com/calculator/466/" target="_blank" rel="noopener noreferrer">View reference&nbsp;&#8599;</a></span></p></div>
+              <div class="learn-a"><p>A sudden gain of <b>3 lb in a day, 3 lb over two days, or 5 lb in a week</b> often means your body is holding extra fluid — the earliest sign to act. Weigh each morning, after the toilet, before breakfast, in similar clothing.<span class="src">Thresholds follow the ACC/AHA Heart Failure guidelines and the Heart Failure &ldquo;Zones&rdquo; patient tool (Yancy CW et al., JACC 2013;62:e147–e239).</span></p></div>
             </div>
             <div class="learn-item" data-learn>
               <button class="learn-q" type="button">
@@ -1683,7 +1684,7 @@
           <button class="qr" type="button" data-qr>More short of breath</button>
         </div>
         <div class="composer-row">
-          <input class="composer-input" id="msg-input" type="text" placeholder="Type a message…" aria-label="Type a message to your care team" />
+          <input class="composer-input" id="msg-input" type="text" placeholder="Type a message…" maxlength="1000" autocomplete="off" aria-label="Type a message to your care team" />
           <button class="composer-send" id="msg-send" type="button" aria-label="Send message">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
                  stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
@@ -1745,13 +1746,16 @@
       var bp = { sys: 125, dia: 80, min_sys: 70, max_sys: 220, min_dia: 40, max_dia: 130 };
       var spo2 = { val: 97, min: 75, max: 100 };
 
-      // Persistent local recovery check — Number.isFinite guards prevent NaN from
-      // corrupted/missing storage silently breaking the zone engine.
+      // Persistent local recovery check — only restore if stored date matches today,
+      // preventing stale vitals from a prior session feeding the zone engine.
       try {
-        var _rw = Number(localStorage.getItem('ch_today_weight')); if (Number.isFinite(_rw)) weight.today = _rw;
-        var _rs = Number(localStorage.getItem('ch_today_bpsys'));  if (Number.isFinite(_rs)) bp.sys = _rs;
-        var _rd = Number(localStorage.getItem('ch_today_bpdia'));  if (Number.isFinite(_rd)) bp.dia = _rd;
-        var _ro = Number(localStorage.getItem('ch_today_spo2'));   if (Number.isFinite(_ro)) spo2.val = _ro;
+        var _todayKey = new Date().toISOString().slice(0, 10);
+        if (localStorage.getItem('ch_today_date') === _todayKey) {
+          var _rw = Number(localStorage.getItem('ch_today_weight')); if (Number.isFinite(_rw)) weight.today = _rw;
+          var _rs = Number(localStorage.getItem('ch_today_bpsys'));  if (Number.isFinite(_rs)) bp.sys = _rs;
+          var _rd = Number(localStorage.getItem('ch_today_bpdia'));  if (Number.isFinite(_rd)) bp.dia = _rd;
+          var _ro = Number(localStorage.getItem('ch_today_spo2'));   if (Number.isFinite(_ro)) spo2.val = _ro;
+        }
       } catch(e) {}
 
       function feelComplete() {
@@ -1825,10 +1829,11 @@
         var dBase = weight.today - weight.dry;
         var wz = 'green', reasons = [];
         // Weight (ACC/AHA HF "zone" thresholds):
-        if (dDay >= 3)       { wz = 'red';    reasons.push('your weight is up ' + dDay + ' lb since yesterday'); }
-        else if (d2day >= 3) { wz = 'yellow'; reasons.push('your weight is up ' + d2day + ' lb over two days'); }
-        else if (dWeek >= 5) { wz = 'yellow'; reasons.push('your weight is up ' + dWeek + ' lb this week'); }
-        else if (dBase >= 5) { wz = 'yellow'; reasons.push('your weight is ' + dBase + ' lb above your usual ' + weight.dry + ' lb'); }
+        if (dDay >= 5)  { wz = worstOf(wz, 'red');    reasons.push('your weight is up ' + dDay.toFixed(1) + ' lb since yesterday'); }
+        else if (dDay >= 3) { wz = worstOf(wz, 'yellow'); reasons.push('your weight is up ' + dDay.toFixed(1) + ' lb since yesterday'); }
+        if (d2day >= 3) { wz = worstOf(wz, 'yellow'); reasons.push('your weight is up ' + d2day.toFixed(1) + ' lb over two days'); }
+        if (dWeek >= 5) { wz = worstOf(wz, 'yellow'); reasons.push('your weight is up ' + dWeek.toFixed(1) + ' lb this week'); }
+        if (dBase >= 5) { wz = worstOf(wz, 'yellow'); reasons.push('your weight is ' + dBase.toFixed(1) + ' lb above your usual ' + weight.dry + ' lb'); }
         // Blood pressure (high):
         var bz = 'green';
         if (bp.sys >= 180 || bp.dia >= 110)      { bz = 'red';    reasons.push('your blood pressure is high at ' + bp.sys + '/' + bp.dia); }
@@ -1903,12 +1908,13 @@
           else tipTextEl.textContent = TIPS_GREEN[new Date().getDate() % TIPS_GREEN.length];
         }
         try {
+          localStorage.setItem('ch_today_date',   new Date().toISOString().slice(0, 10));
           localStorage.setItem('ch_today_weight', String(weight.today));
           localStorage.setItem('ch_today_bpsys', String(bp.sys));
           localStorage.setItem('ch_today_bpdia', String(bp.dia));
           localStorage.setItem('ch_today_spo2', String(spo2.val));
         } catch(e) {
-          console.warn('[CardiaHome] storage write failed:', e);
+          console.warn('[CardiaHome] storage write failed.');
           var sb = document.getElementById('storage-warn');
           if (sb) { sb.hidden = false; }
         }
@@ -2049,7 +2055,7 @@
         var X = function (i) { return padL + (W - padL - padR) * (n <= 1 ? 0.5 : i / (n - 1)); };
         var Y = function (v) { return padT + (H - padT - padB) * (1 - (v - lo) / rng); };
         var line = values.map(function (v, i) { return X(i).toFixed(1) + ',' + Y(v).toFixed(1); }).join(' ');
-        var gid = 'cg' + (++chartSeq);
+        var gid = 'cg' + (chartSeq = (chartSeq % 99) + 1);
 
         while (svg.firstChild) svg.removeChild(svg.firstChild);
 
@@ -2156,7 +2162,7 @@
           else if (u.indexOf('question') > -1)
             reply = 'Of course — go ahead and tell me what’s on your mind.';
           else
-            reply = 'Thank you, John. I’m glad to hear it. Message me any time you need.';
+            reply = ‘Thank you, ‘ + firstName() + ‘. I\’m glad to hear it. Message me any time you need.’;
           addMsg('them', reply);
         }, 1500);
       }
@@ -2190,8 +2196,9 @@
         if (obBack) obBack.hidden = obStep === 1;
         if (obNextTxt) obNextTxt.textContent = obStep === OB_LAST ? 'Start' : 'Next';
       }
-      function firstName() { var v = (obName && obName.value || 'John').trim() || 'John'; return v.split(' ')[0]; }
-      function nurseName() { return (obNurse && obNurse.value || 'Sarah').trim() || 'Sarah'; }
+      function sanitizeName(s) { return s.replace(/[^A-Za-zÀ-ɏ\s\-']/g, '').slice(0, 40); }
+      function firstName() { var v = sanitizeName((obName && obName.value || 'John').trim()) || 'John'; return v.split(' ')[0]; }
+      function nurseName() { return sanitizeName((obNurse && obNurse.value || 'Sarah').trim()) || 'Sarah'; }
 
       function applyValues() {
         var first = firstName(), nurse = nurseName();
