@@ -2210,7 +2210,7 @@
       var avatarBtn = document.querySelector('.avatar');
       if (avatarBtn) { avatarBtn.style.cursor = 'pointer'; avatarBtn.addEventListener('click', function () { obShow(1); if (onboard) onboard.classList.remove('dismissed'); }); }
 
-      // First-run gating: restore saved details & skip onboarding if already completed
+      // Restore saved details (or apply defaults on first run) and skip onboarding
       try {
         if (localStorage.getItem('ch_onboarded')) {
           var sN = localStorage.getItem('ch_name'), sNu = localStorage.getItem('ch_nurse'), sD = localStorage.getItem('ch_dry');
@@ -2218,8 +2218,10 @@
           if (sNu && obNurse) obNurse.value = sNu;
           var _sD = Number(sD); if (Number.isFinite(_sD) && _sD > 0) { obDryVal = _sD; if (obDryEl) obDryEl.textContent = obDryVal; }
           applyValues();
-          if (onboard) onboard.classList.add('dismissed');
+        } else {
+          applyOnboarding(); // auto-complete with defaults (John, 178 lbs, Sarah)
         }
+        if (onboard) onboard.classList.add('dismissed');
       } catch (e) {}
       obShow(1);
 
