@@ -1882,7 +1882,7 @@
         if (spNumEl) spNumEl.textContent = spo2.val;
         // Personalized tip (zone-aware)
         if (tipTextEl) {
-          if (z === 'yellow') tipTextEl.textContent = 'Some of today’s readings are drifting. Rest, go easy on salt and fluids, and check again in a little while.';
+          if (z === 'yellow') tipTextEl.textContent = 'Some of today's readings are drifting. Rest, go easy on salt and fluids, and check again in a little while.';
           else if (z === 'red') tipTextEl.textContent = 'Call 911 now. While waiting for help: sit upright, rest, and avoid salty foods and extra fluids.';
           else tipTextEl.textContent = TIPS_GREEN[new Date().getDate() % TIPS_GREEN.length];
         }
@@ -2135,13 +2135,13 @@
           if (typing.parentNode) typing.parentNode.removeChild(typing);
           var u = (userText || '').toLowerCase(), reply;
           if (u.indexOf('weight') > -1)
-            reply = 'Thanks for telling me. Please weigh again tomorrow morning, go easy on salty foods today, and take your water pill. I’ll be keeping an eye on your numbers.';
+            reply = 'Thanks for telling me. Please weigh again tomorrow morning, go easy on salty foods today, and take your water pill. I'll be keeping an eye on your numbers.';
           else if (u.indexOf('breath') > -1 || u.indexOf('short') > -1)
             reply = "Sorry to hear you are short of breath. Sit upright and rest. If it gets worse or you have chest pain, call 911 right away — do not wait. Call 911 first, then contact your nurse.";
           else if (u.indexOf('question') > -1)
-            reply = 'Of course — go ahead and tell me what’s on your mind.';
+            reply = 'Of course — go ahead and tell me what's on your mind.';
           else
-            reply = ‘Thank you, ‘ + firstName() + ‘. I\’m glad to hear it. Message me any time you need.’;
+            reply = 'Thank you, ' + firstName() + '. I\'m glad to hear it. Message me any time you need.';
           addMsg('them', reply);
         }, 1500);
       }
@@ -2231,7 +2231,7 @@
         'Weigh yourself every morning, after the toilet and before breakfast, for the most accurate trend.',
         'Keep up your salt-smart eating today — fresh foods over packaged whenever you can.',
         'A little daily movement, like a short walk, is good for your heart. Rest when you need to.',
-        'Take your medications at the same time each day so they’re easy to remember.'
+        'Take your medications at the same time each day so they're easy to remember.'
       ];
 
       // ---- Education accordion ----
