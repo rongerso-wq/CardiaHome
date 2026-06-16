@@ -81,33 +81,15 @@
       display: flex; flex-direction: column;
     }
 
-    /* Desktop only: wrap in a phone mockup */
+    /* Desktop: centered card (no phone frame) */
     @media (min-width: 600px) {
-      body {
-        background: radial-gradient(circle at 50% -10%, var(--studio-1) 0%, var(--studio-2) 70%);
-        align-items: flex-start;
-        padding: 32px 16px;
-      }
-      .device {
-        width: 392px;
-        background: var(--frame);
-        border-radius: var(--radius-frame);
-        padding: 13px;
-        box-shadow: var(--shadow-frame);
-      }
-      .screen {
-        border-radius: 35px;
-        min-height: 640px;
-      }
+      body { padding: 32px 16px; }
+      .device { max-width: 480px; }
+      .screen { border-radius: 28px; box-shadow: 0 28px 72px rgba(20,24,28,.18); }
     }
 
     /* Status bar */
-    .statusbar {
-      position: relative; height: 52px; flex: 0 0 auto;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 30px; font-size: 15px; font-weight: 600; color: var(--ink);
-      z-index: 3;
-    }
+    .statusbar { display: none; }
     .statusbar .island {
       position: absolute; top: 11px; left: 50%; transform: translateX(-50%);
       width: 114px; height: 31px; background: var(--frame); border-radius: 16px;
@@ -842,6 +824,8 @@
   </style>
 </head>
 <body>
+  <!-- Hub back link -->
+  <a href="https://rongerso-wq.github.io/VitalHub/" style="position:fixed;top:12px;left:12px;z-index:999;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border:1px solid rgba(20,24,28,.10);border-radius:20px;padding:6px 14px;font-size:13px;font-weight:700;color:var(--hero-1);text-decoration:none;display:flex;align-items:center;gap:5px;box-shadow:0 2px 8px rgba(20,24,28,.08);">&#8592; VitalHub</a>
   <div class="device">
     <div class="screen">
 
