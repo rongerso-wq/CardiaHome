@@ -423,6 +423,26 @@
     .dev-name { font-size: 14px; font-weight: 700; line-height: 1.1; }
     .dev-status { font-size: 12px; font-weight: 700; color: var(--calm); display: inline-flex; align-items: center; gap: 5px; }
     .dev-status .pip { width: 6px; height: 6px; border-radius: 50%; background: var(--calm); }
+    .dev-soon .dev-ico { opacity: .55; }
+    .dev-soon-txt { color: var(--ink-soft) !important; font-style: italic; }
+    .coming-badge { margin-left: auto; background: rgba(26,111,168,.08); color: var(--hero-1); border: 1px solid rgba(26,111,168,.18); border-radius: 20px; padding: 3px 10px; font-size: 11px; font-weight: 800; letter-spacing: .5px; }
+
+    /* ---------- 7-day zone strip ---------- */
+    .week-strip { background: var(--surface); border-radius: 18px; border: 1.5px solid var(--line); padding: 14px 16px; }
+    .week-strip-title { font-size: 11px; font-weight: 800; letter-spacing: 1.4px; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 10px; }
+    .week-dots { display: flex; justify-content: space-between; }
+    .wd { display: flex; flex-direction: column; align-items: center; gap: 5px; }
+    .wd-dot { width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--line); background: var(--bg); display: block; }
+    .wd-dot.wd-green  { background: var(--calm); border-color: var(--calm); }
+    .wd-dot.wd-yellow { background: #E0A025; border-color: #E0A025; }
+    .wd-dot.wd-red    { background: var(--alarm); border-color: var(--alarm); }
+    .wd-lbl { font-size: 11px; font-weight: 700; color: var(--ink-soft); }
+
+    /* ---------- Demo mode (scenarios hidden until activated) ---------- */
+    .scenarios { display: none; }
+    body.demo-mode .scenarios { display: block; }
+    .demo-toggle { display: none; position: fixed; bottom: 14px; right: 14px; z-index: 200; background: rgba(20,24,28,.08); border: none; border-radius: 20px; padding: 5px 12px; font-size: 11px; font-weight: 700; color: var(--ink-soft); cursor: pointer; }
+    body.demo-mode .demo-toggle { background: var(--hero-1); color: #fff; }
 
     /* ---------- Emergency "connecting" state ---------- */
     .emergency.connecting { background: linear-gradient(145deg,#15875A,#0E6B47); box-shadow: 0 10px 22px rgba(21,135,90,.34); }
@@ -924,8 +944,8 @@
       <!-- NOTE: Concept mockup — all patient data, medications, readings, and clinician names below are fictional sample data. -->
       <main class="content">
 
-        <!-- Brand lockup -->
-        <div class="brand">
+        <!-- Brand lockup (tap 5× to toggle demo/presentation mode) -->
+        <div class="brand" id="brand-tap" role="button" tabindex="0" aria-label="CardiaHome" style="cursor:default">
           <span class="brand-mark" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
               <path d="M12 21s-7.5-4.6-10-9.3C.6 8.4 2 4.8 5.2 4.2 7.2 3.8 9 4.9 10 6.4l.8 1.2.8-1.2
@@ -934,6 +954,7 @@
           </span>
           <span class="brand-name">Cardia<span>Home</span></span>
         </div>
+        <button class="demo-toggle" id="demo-toggle" type="button">Demo Mode</button>
 
         <!-- Top bar -->
         <div class="topbar">
@@ -997,6 +1018,12 @@
             <div class="hero-sub"><span class="pip"></span><span class="hero-sub-txt">All readings in range</span></div>
           </div>
         </section>
+
+        <!-- 7-day zone strip -->
+        <div class="week-strip" aria-label="7-day zone history">
+          <div class="week-strip-title">This Week</div>
+          <div class="week-dots" id="week-dots" aria-hidden="true"></div>
+        </div>
 
         <!-- Emergency button -->
         <button class="emergency" type="button" aria-label="Call your community nurse">
@@ -1354,17 +1381,18 @@
         </section>
 
         <!-- Connected devices -->
-        <section class="devices" aria-label="Connected devices">
+        <section class="devices" aria-label="Connected devices — coming soon">
           <div class="devices-head">
             <svg class="bt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                  stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
               <path d="m7 7 10 10-5 5V2l5 5L7 17"/>
             </svg>
             <span class="lbl">Connected Devices</span>
-            <span class="all-ok"><span class="pip"></span>All linked</span>
+            <span class="coming-badge">Coming Soon</span>
           </div>
+          <p style="font-size:13px;color:var(--ink-soft);margin:0 0 12px;line-height:1.5;">Planned integration with Bluetooth-enabled devices and Apple Watch for automatic reading sync.</p>
           <div class="dev-list">
-            <div class="dev">
+            <div class="dev dev-soon">
               <div class="dev-ico">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
                      stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -1373,9 +1401,9 @@
                 </svg>
               </div>
               <div class="dev-name">Bluetooth BP Cuff</div>
-              <div class="dev-status"><span class="pip"></span>Connected</div>
+              <div class="dev-status dev-soon-txt">Planned</div>
             </div>
-            <div class="dev">
+            <div class="dev dev-soon">
               <div class="dev-ico">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
                      stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -1384,18 +1412,17 @@
                 </svg>
               </div>
               <div class="dev-name">Smart Scale</div>
-              <div class="dev-status"><span class="pip"></span>Connected</div>
+              <div class="dev-status dev-soon-txt">Planned</div>
             </div>
-            <div class="dev">
+            <div class="dev dev-soon">
               <div class="dev-ico">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
                      stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <rect x="4" y="9" width="16" height="9" rx="2"/>
-                  <path d="M8 9V6a4 4 0 0 1 8 0v3"/><path d="M12 13v2"/>
+                  <path d="M9 12h.01M15 12h.01M12 12h.01M12 5a7 7 0 0 1 7 7c0 2.5-1.5 4.7-3 5.9V21H8v-3.1C6.5 16.7 5 14.5 5 12a7 7 0 0 1 7-7z"/>
                 </svg>
               </div>
-              <div class="dev-name">BP Cuff</div>
-              <div class="dev-status"><span class="pip"></span>Connected</div>
+              <div class="dev-name">Apple Watch</div>
+              <div class="dev-status dev-soon-txt">Planned</div>
             </div>
           </div>
         </section>
@@ -1871,11 +1898,15 @@
           else tipTextEl.textContent = TIPS_GREEN[new Date().getDate() % TIPS_GREEN.length];
         }
         try {
-          localStorage.setItem('ch_today_date',   new Date().toISOString().slice(0, 10));
+          var _todayDk = new Date().toISOString().slice(0, 10);
+          localStorage.setItem('ch_today_date',   _todayDk);
           localStorage.setItem('ch_today_weight', String(weight.today));
-          localStorage.setItem('ch_today_bpsys', String(bp.sys));
-          localStorage.setItem('ch_today_bpdia', String(bp.dia));
-          localStorage.setItem('ch_today_spo2', String(spo2.val));
+          localStorage.setItem('ch_today_bpsys',  String(bp.sys));
+          localStorage.setItem('ch_today_bpdia',  String(bp.dia));
+          localStorage.setItem('ch_today_spo2',   String(spo2.val));
+          // Date-keyed history (for 7-day strip + weight trend)
+          localStorage.setItem('ch_wt_'   + _todayDk, String(weight.today));
+          localStorage.setItem('ch_zone_' + _todayDk, z);
         } catch(e) {
           console.warn('[CardiaHome] storage write failed.');
           var sb = document.getElementById('storage-warn');
@@ -1886,6 +1917,8 @@
         var chW = document.getElementById('chart-weight'); if (chW) drawChart(chW, weight.hist.concat(weight.today), '#2E5A8F');
         var chB = document.getElementById('chart-bp'); if (chB) drawChart(chB, [124, 126, 122, 125, 127, 123, 125, bp.sys], '#B23A52');
         var chO = document.getElementById('chart-spo2'); if (chO) drawChart(chO, [96, 98, 97, 96, 97, 97, 98, spo2.val], '#0F7A6E');
+        if (typeof updateWeekStrip === 'function') updateWeekStrip();
+        if (typeof updateWeightRows === 'function') updateWeightRows();
       }
 
       function setWeight(v) { weight.today = Math.max(weight.min, Math.min(weight.max, Number(v))); updateZone(); }
@@ -2076,6 +2109,7 @@
           var on = row.classList.toggle('taken');
           chk.setAttribute('aria-pressed', on ? 'true' : 'false');
           refreshMeds();
+          saveMedState();
         });
       });
       refreshMeds();
@@ -2217,6 +2251,96 @@
         'A little daily movement, like a short walk, is good for your heart. Rest when you need to.',
         "Take your medications at the same time each day so they're easy to remember."
       ];
+
+      // ---- Persistent history helpers ----
+      function _dk(offsetDays) {
+        var d = new Date();
+        if (offsetDays) d.setDate(d.getDate() - offsetDays);
+        return d.toISOString().slice(0, 10);
+      }
+
+      // Load 7-day weight history from localStorage into weight.hist (oldest→newest)
+      function loadWeightHistory() {
+        try {
+          var hist = [];
+          for (var i = 6; i >= 1; i--) {
+            var v = Number(localStorage.getItem('ch_wt_' + _dk(i)));
+            hist.push(Number.isFinite(v) && v > 50 ? v : weight.dry);
+          }
+          weight.hist = hist;
+        } catch(e) {}
+      }
+      loadWeightHistory();
+
+      // Update the "Today / Yesterday / …" rows inside #panel-weight
+      function updateWeightRows() {
+        var rows = document.querySelectorAll('#panel-weight .hist-row');
+        var dayNames = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+        rows.forEach(function(row, i) {
+          var d = new Date(); d.setDate(d.getDate() - i);
+          var v = (i === 0) ? weight.today : Number(localStorage.getItem('ch_wt_' + d.toISOString().slice(0,10)));
+          var dayEl = row.querySelector('.hist-day');
+          var valEl = row.querySelector('.hist-val');
+          if (dayEl) dayEl.textContent = i === 0 ? 'Today' : (i === 1 ? 'Yesterday' : dayNames[d.getDay()]);
+          if (valEl) valEl.innerHTML = (Number.isFinite(v) && v > 50 ? v : '&mdash;') + '<small> lbs</small>';
+        });
+      }
+
+      // 7-day zone strip
+      function updateWeekStrip() {
+        var el = document.getElementById('week-dots');
+        if (!el) return;
+        var dayNames = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+        var html = '';
+        for (var i = 6; i >= 0; i--) {
+          var d = new Date(); d.setDate(d.getDate() - i);
+          var zone = localStorage.getItem('ch_zone_' + d.toISOString().slice(0,10)) || 'empty';
+          var label = i === 0 ? 'Today' : dayNames[d.getDay()];
+          html += '<div class="wd"><span class="wd-dot wd-' + zone + '"></span><span class="wd-lbl">' + label + '</span></div>';
+        }
+        el.innerHTML = html;
+      }
+
+      // Medication persistence per day
+      var _medDayKey = 'ch_meds_' + _dk();
+      function saveMedState() {
+        try {
+          var s = {};
+          document.querySelectorAll('.med-row[data-med]').forEach(function(r, i) { s[i] = r.classList.contains('taken'); });
+          localStorage.setItem(_medDayKey, JSON.stringify(s));
+        } catch(e) {}
+      }
+      function loadMedState() {
+        try {
+          var s = JSON.parse(localStorage.getItem(_medDayKey));
+          if (!s) return;
+          document.querySelectorAll('.med-row[data-med]').forEach(function(r, i) {
+            if (s[i]) { r.classList.add('taken'); var b = r.querySelector('.med-check'); if (b) b.setAttribute('aria-pressed','true'); }
+          });
+        } catch(e) {}
+      }
+      loadMedState();
+
+      // Demo / presentation mode: tap brand logo 5× fast to reveal scenario buttons
+      (function() {
+        var taps = 0, timer;
+        var brand = document.getElementById('brand-tap');
+        var toggle = document.getElementById('demo-toggle');
+        if (!brand) return;
+        brand.addEventListener('click', function() {
+          taps++;
+          clearTimeout(timer);
+          timer = setTimeout(function() { taps = 0; }, 1500);
+          if (taps >= 5) {
+            taps = 0;
+            document.body.classList.toggle('demo-mode');
+            if (toggle) toggle.style.display = 'block';
+          }
+        });
+        if (toggle) toggle.addEventListener('click', function() {
+          document.body.classList.toggle('demo-mode');
+        });
+      })();
 
       // ---- Education accordion ----
       document.querySelectorAll('[data-learn]').forEach(function (item) {
